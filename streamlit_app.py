@@ -1,31 +1,41 @@
 import streamlit as st
 import pandas as pd
-import numpy as np
 
-st.title(":blue[Chionia Cinta Mbindi]")
-st.write("22220008")
+# Judul aplikasi
+st.title("Diabetes Dataset")
+st.write("Data Overview")
 
-df_sales = pd.read_csv("./sales_data_sample.csv", encoding="iso-8859-1")
+# Membaca dataset diabetes
+df_diabetes = pd.read_csv("./diabetes.csv", encoding="iso-8859-1")
 
-# Get unique product lines
-product_lines = df_sales["PRODUCTLINE"].unique()
+# Menampilkan kolom untuk lebih memahami data
+st.write("Dataset Columns: ", df_diabetes.columns.tolist())
 
-# Create a DataFrame with ORDERDATE as index and product lines as columns
-df_productline_sales = df_sales.pivot_table(values='QUANTITYORDERED', index='ORDERDATE', columns='PRODUCTLINE', fill_value=0)
+# Memfilter dataset berdasarkan kelas 'Outcome' (0 = Tidak Diabetes, 1 = Diabetes)
+df_filtered = df_diabetes[df_diabetes['Outcome'].isin([0, 1])]
 
-# Print the DataFrame
+# Menghitung jumlah kemunculan tiap kelas pada kolom 'Outcome'
+outcome_counts = df_filtered['Outcome'].value_counts()
+
+# Membuat DataFrame untuk visualisasi dan tabel
+df_outcome_counts = pd.DataFrame(outcome_counts).reset_index()
+df_outcome_counts.columns = ['Outcome', 'Count']
+
+# Mengubah nilai 'Outcome' menjadi lebih deskriptif (0 -> Non-Diabetic, 1 -> Diabetic)
+df_outcome_counts['Outcome'] = df_outcome_counts['Outcome'].replace({0: 'Non-Diabetic', 1: 'Diabetic'})
+
+# Menampilkan tabel jumlah tiap kelas 'Outcome'
+st.write("Class Counts Table")
+st.dataframe(df_outcome_counts)
+
+# Menampilkan dataset yang telah difilter
+st.write("Filtered Dataset")
+st.dataframe(df_filtere
 
 #
-# Area Chart
+# Bar Chart untuk Outcome
 #
-st.title("Area Chart")
-st.area_chart(df_productline_sales)
-st.markdown("---")
-st.title("Bar Chart")
-st.bar_chart(df_productline_sales)
-st.markdown("---")
-st.title("Line Chart")
-st.line_chart(df_productline_sales)
-st.markdown("---")
+st.title("Bar Chart of Diabetes Outcome Classes")
+st.bar_chart(df_outcome_counts.set_index('Outcome'))
 
-# 
+st.markdown("---")
