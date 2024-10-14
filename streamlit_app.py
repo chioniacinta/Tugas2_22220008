@@ -30,7 +30,7 @@ st.dataframe(df_outcome_counts)
 
 # Menampilkan dataset yang telah difilter
 st.write("Filtered Dataset")
-st.dataframe(df_filtere
+st.dataframe(df_filtered)
 
 #
 # Bar Chart untuk Outcome
