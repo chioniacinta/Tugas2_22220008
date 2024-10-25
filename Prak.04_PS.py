@@ -5,7 +5,7 @@ import pandas as pd
 st.title("Visualisasi Dataset")
 
 # Input untuk mengunggah dataset
-uploaded_file = st.file_uploader("diabetes.csv", type="csv")
+uploaded_file = st.file_uploader("Unggah file CSV", type="csv")
 
 # Jika ada file yang diunggah, maka lanjutkan
 if uploaded_file is not None:
