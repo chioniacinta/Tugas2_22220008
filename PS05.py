@@ -1,15 +1,12 @@
 import streamlit as st
-import pandas as pd
 import numpy as np
 import pickle
-from sklearn.preprocessing import MinMaxScaler
-from sklearn.svm import SVC
 from tensorflow.keras.models import load_model
 
 # Fungsi untuk memuat model
 @st.cache_resource
 def load_models():
-    lstm_model = load_model('/workspaces/Tugas2_22220008/lstm_model.h5')
+    lstm_model = load_model('lstm_model.h5')
     with open('svm_model.pkl', 'rb') as svm_file:
         svm_classifier = pickle.load(svm_file)
     with open('scaler.pkl', 'rb') as scaler_file:
@@ -43,11 +40,14 @@ if st.button("Prediksi"):
     # Skala input menggunakan scaler yang sudah dilatih
     input_scaled = scaler.transform(input_data)
 
-    # Bentuk input untuk LSTM
+    # Bentuk input untuk LSTM (samples, timesteps, features)
     input_lstm = input_scaled.reshape((input_scaled.shape[0], 1, input_scaled.shape[1]))
 
     # Ekstrak fitur menggunakan model LSTM
     lstm_features = lstm_model.predict(input_lstm)
+    
+    # Pastikan bahwa output dari LSTM memiliki bentuk (1, 8)
+    lstm_features = lstm_features.reshape(1, -1)
 
     # Prediksi menggunakan model SVM
     prediction = svm_classifier.predict(lstm_features)
