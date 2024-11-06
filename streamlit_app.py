@@ -2,19 +2,27 @@ import streamlit as st
 import numpy as np
 import pickle
 from tensorflow.keras.models import load_model
- 
+
 # Fungsi untuk memuat model
 @st.cache_resource
 def load_models():
-    lstm_model = load_model('lstm_model.h5')
-    with open('svm_model.pkl', 'rb') as svm_file:
-        svm_classifier = pickle.load(svm_file)
-    with open('scaler.pkl', 'rb') as scaler_file:
-        scaler = pickle.load(scaler_file)
-    return lstm_model, svm_classifier, scaler
+    try:
+        lstm_model = load_model('lstm_model.h5')  # Pastikan model LSTM ada di path yang benar
+        with open('svm_model.pkl', 'rb') as svm_file:
+            svm_classifier = pickle.load(svm_file)
+        with open('scaler.pkl', 'rb') as scaler_file:
+            scaler = pickle.load(scaler_file)
+        return lstm_model, svm_classifier, scaler
+    except Exception as e:
+        st.error(f"Terjadi kesalahan saat memuat model: {e}")
+        return None, None, None
 
 # Memuat model LSTM, SVM, dan Scaler
 lstm_model, svm_classifier, scaler = load_models()
+
+# Jika model gagal dimuat, beri pesan error
+if lstm_model is None or svm_classifier is None or scaler is None:
+    st.stop()
 
 # Judul aplikasi
 st.title("Aplikasi Prediksi Diabetes")
@@ -38,22 +46,25 @@ input_data = np.array([[pregnancies, glucose, blood_pressure, skin_thickness, in
 # Tombol prediksi
 if st.button("Prediksi"):
     # Skala input menggunakan scaler yang sudah dilatih
-    input_scaled = scaler.transform(input_data)
+    try:
+        input_scaled = scaler.transform(input_data)
 
-    # Bentuk input untuk LSTM (samples, timesteps, features)
-    input_lstm = input_scaled.reshape((input_scaled.shape[0], 1, input_scaled.shape[1]))
+        # Bentuk input untuk LSTM (samples, timesteps, features)
+        input_lstm = input_scaled.reshape((input_scaled.shape[0], 1, input_scaled.shape[1]))
 
-    # Ekstrak fitur menggunakan model LSTM
-    lstm_features = lstm_model.predict(input_lstm)
-    
-    # Pastikan bahwa output dari LSTM memiliki bentuk (1, 8)
-    lstm_features = lstm_features.reshape(1, -1)
+        # Ekstrak fitur menggunakan model LSTM
+        lstm_features = lstm_model.predict(input_lstm)
 
-    # Prediksi menggunakan model SVM
-    prediction = svm_classifier.predict(lstm_features)
+        # Pastikan bahwa output dari LSTM memiliki bentuk (1, 8)
+        lstm_features = lstm_features.reshape(1, -1)
 
-    # Tampilkan hasil prediksi
-    if prediction[0] == 1:
-        st.write("Hasil Prediksi: Positif Diabetes")
-    else:
-        st.write("Hasil Prediksi: Negatif Diabetes")
+        # Prediksi menggunakan model SVM
+        prediction = svm_classifier.predict(lstm_features)
+
+        # Tampilkan hasil prediksi
+        if prediction[0] == 1:
+            st.write("Hasil Prediksi: Positif Diabetes")
+        else:
+            st.write("Hasil Prediksi: Negatif Diabetes")
+    except Exception as e:
+        st.error(f"Terjadi kesalahan saat prediksi: {e}")
